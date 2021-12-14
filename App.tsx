@@ -1,21 +1,41 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import useCachedResources from './Hooks/useCachedResources';
+import useColorScheme from './Hooks/useColorScheme';
+import Navigation from './navigation/Navigation';
+import PlayerWidgets from './components/PlayerWidget/PlayerWidget';
+import { Provider } from 'react-redux';
+import { store } from './reducer/store';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+import { AppContext } from './AppContext';
+
+function App() {
+  const [songId, setSongId] = useState<number | null>(null);
+  const [imageId, setImageId] = useState<string | null>(null);
+  const isLoadingComplete = useCachedResources();
+  const colorScheme = useColorScheme();
+
+  if (!isLoadingComplete) {
+    return null;
+  } else {
+    return (
+      <SafeAreaProvider>
+        <AppContext.Provider
+          value={{
+            songId,
+            imageId,
+            setSongId: (id: number) => setSongId(id),
+            setImageId: (image: string) => setImageId(image),
+          }}>
+          <Provider store={store}>
+            <Navigation colorScheme={colorScheme} />
+            <StatusBar />
+            <PlayerWidgets />
+          </Provider>
+        </AppContext.Provider>
+      </SafeAreaProvider>
+    );
+  }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
